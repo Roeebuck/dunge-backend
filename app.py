@@ -1,14 +1,18 @@
 import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
 CORS(app)
 
-# Nastavení DeepSeek API klíče sss
+# Nastavení DeepSeek API klíče
 DEEPSEEK_API_KEY = "sk-b0169bef2c044b3db675bc2a516c9104"
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 
+@app.route('/')
+def home():
+    return jsonify({"message": "Backend běží správně!"})
 
 @app.route('/next', methods=['POST'])
 def next_scene():
@@ -31,7 +35,7 @@ def next_scene():
 
     try:
         response = requests.post(DEEPSEEK_API_URL, headers=headers, json=payload)
-        response.raise_for_status()  # Vyhodí výjimku pro chybové stavy HTTP
+        response.raise_for_status()
         response_data = response.json()
         
         story_text = response_data["choices"][0]["message"]["content"]
@@ -43,4 +47,5 @@ def next_scene():
         return jsonify({"error": "Invalid response format from API"}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))  # Render běží na dynamickém portu
+    app.run(host='0.0.0.0', port=port)
